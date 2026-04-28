@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["python311", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["python manage.py collectstatic --noinput"]
+
+[start]
+cmd = "python manage.py migrate --noinput && python seed.py && celery -A config worker --loglevel=info --concurrency=1 & celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler & gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
