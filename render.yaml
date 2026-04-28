@@ -11,7 +11,7 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: python manage.py migrate --noinput && python seed.py & celery -A config worker --loglevel=info --concurrency=1 & celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler & gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 1 --timeout 120
     healthCheckPath: /admin/
     envVars:
       - key: DATABASE_URL
