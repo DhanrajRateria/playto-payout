@@ -1,18 +1,19 @@
 """
-Run with: python manage.py shell < seed.py
-OR: python seed.py (if run from backend/ with DJANGO_SETTINGS_MODULE set)
+Run with: python seed.py (from backend/ with DJANGO_SETTINGS_MODULE set)
 """
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from merchants.models import Merchant, LedgerEntry
-from payouts.models import BankAccount
+from payouts.models import BankAccount, Payout, IdempotencyKey
 
-# Clear existing seed data
+# Clear in correct FK order: children before parents
 print("Clearing old seed data...")
-LedgerEntry.objects.all().delete()
-BankAccount.objects.all().delete()
+IdempotencyKey.objects.all().delete()   # references Payout + Merchant
+LedgerEntry.objects.all().delete()      # references Payout + Merchant
+Payout.objects.all().delete()           # references BankAccount + Merchant
+BankAccount.objects.all().delete()      # references Merchant
 Merchant.objects.all().delete()
 
 # Create merchants
